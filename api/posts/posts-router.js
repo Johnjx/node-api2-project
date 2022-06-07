@@ -71,4 +71,55 @@ router.post('/', (req, res) => {
     })
 })
 
+router.put('/:id', (req, res) => {
+    const { title, contents } = req.body;
+    if (!req.body.title || typeof title !== 'string' || title === '') {
+        res.status(400).json({
+            message: "Please provide title and contents for the post"
+        });
+        return;
+    }
+    if (!req.body.contents || typeof contents !== 'string' || contents === '') {
+        res.status(400).json({
+            message: "Please provide title and contents for the post"
+        });
+        return;
+    }
+    Posts.findById(req.params.id)
+    .then(post => {
+        if(post == null) {
+            res.status(404).json({
+                message: "The post with the specified ID does not exist"
+            });
+            return;
+        }
+    })
+    .catch(err => {
+        res.status(500).json({
+            message: "The post information could not be retrieved",
+            err: err.message,
+            stack: err.stack
+        })
+    })
+    Posts.update(req.params.id, req.body)
+    .then(count => {
+        Posts.findById(count)
+        .then(post => res.json(post))
+        .catch(err => {
+            res.status(500).json({
+                message: "The post information could not be retrieved",
+                err: err.message,
+                stack: err.stack
+            })
+        })
+    })
+    .catch(err => {
+        res.status(500).json({
+            message: "The post information could not be modified",
+            err: err.message,
+            stack: err.stack
+        })
+    })
+})
+
 module.exports = router;
